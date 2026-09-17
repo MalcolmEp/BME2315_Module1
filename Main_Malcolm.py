@@ -68,6 +68,10 @@ mean_sex = [x_male_bar, x_female_bar]
 stdev_sex = [age_at_death_male_stdev, age_at_death_female_stdev]
 yerr = [np.zeros(len(mean_sex)), stdev_sex]
 
+
+t_stat, p_val = stats.ttest_ind(age_at_death_male, age_at_death_female)
+print(f't_stat = {t_stat}, p_val = {p_val}')
+
 plt.bar(patient_sex_cols, mean_sex, yerr=yerr, capsize=10, color=["blue", "orange"]) # setting colors and chart titles
 plt.title("Age at Death by Sex")
 plt.xlabel("Sex")
