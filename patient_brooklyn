@@ -1,0 +1,10 @@
+import csv
+all_patient_objects= []
+class patient_objects: 
+    def __init__(self, death_age: int, head_injury: int, beta: int, ed_level): 
+            self.death_age = death_age
+            self.head_injury = head_injury
+            self.beta = beta
+            self.name = name
+            self.ed_level = ed_level
+            patient_objects.all_patient_objects.append(self)
