@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt # Importing all neccesary stuff
 from scipy import stats
 import numpy as np
 import statistics 
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 with open("/Users/malcolmepstein/Desktop/BME 2315/Module 1/BME2315_Module1/Metadata and Protein Data for Module 1.csv", newline="") as f:  # Opening the data file to read 
         reader = csv.reader(f)
@@ -91,6 +93,23 @@ for patient in Patient_Objects.all_patients:  # if a patient has a ph of above 5
 X = brain_ph # setting variables, x to ph and y to tau
 y = tTau_pg_ug
 
+X = np.array(brain_ph).reshape(-1,1)
+y = np.array(tTau_pg_ug)
+
+model = LinearRegression()
+model.fit(X,y)
+
+slope = model.coef_[0]
+intercept = model.intercept_
+r2 = model.score(X,y)
+
+equation = f"y = {slope:.2f}x + {intercept:.2f}\nR^2 = {r2:.5f}"
+plt.text(0.05, 0.95, equation, transform=plt.gca().transAxes, color = "red", fontsize = 12, verticalalignment = 'top')
+
+x_line = np.linspace(X.min(), X.max(), 100).reshape(-1, 1)
+y_line = model.predict(x_line)
+plt.plot(x_line, y_line, color='red', linewidth=2)
+
 plt.scatter(X, y, color='blue') # printing the scatter plot and setting colors / titles
 plt.xlabel('Brain pH')
 plt.ylabel('tTAU pg/ag')
@@ -99,3 +118,20 @@ plt.show()
 
 
 # For some reason you have to click run twice, and delete the first bar graph to let both graphs appear at once
+
+
+
+# ANOVA
+
+age_at_death = []
+# brain ph is already fetched
+# tTau is already fetched
+
+for patient in Patient_Objects.filter(Patient_Objects.all_patients):
+    age_at_death.append(patient.age_at_death)
+
+t_stat2, p_value2 = stats.f_oneway(age_at_death, brain_ph, tTau_pg_ug)
+print("ANOVA:")
+print(f't_stat = {t_stat2}, p_val = {p_value2}')
+
+# find out how to print this graph
