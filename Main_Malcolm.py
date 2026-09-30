@@ -7,93 +7,77 @@ import statistics
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 
-with open("/Users/malcolmepstein/Desktop/BME 2315/Module 1/BME2315_Module1/Metadata and Protein Data for Module 1.csv", newline="") as f:  # Opening the data file to read 
-        reader = csv.reader(f)
-        headers = next(reader) # Get the first row
-        for h in headers:
-            print(h)
-
-# initializing our own test patients
-Patient_Object1 = Patient_Objects(90,7.7,137.9865,"H19.33.004","Female")
-Patient_Object2 = Patient_Objects(88,8.2,241.264,"H20.33.005","Male")
-Patient_Object3 = Patient_Objects(95,7.1,319.95,"H19.33.006","Female")
-Patient_Object4 = Patient_Objects(77,7.5,94.12345,"H20.33.005","Female")
-Patient_Object5 = Patient_Objects(74,8.1,333.1675,"H20.33.007","Male")
-
-
-print(Patient_Object1)
-print(Patient_Object2)
-print(Patient_Object3)
-print(Patient_Object4)
-print(Patient_Object5)
-print()
-
-sorted_patients = sorted(Patient_Objects.all_patients, key = Patient_Objects.get_age_at_death) # sorting patients by age at death
-
-for patient in sorted_patients:
-    print(patient) 
-
-print()
-
-
-Patient_Objects.print_based_on_aad_sex()  # calling the method to print any patients above a given age of death of 88 and sex (female) (this is only taken from my created 5 patients)
-
-print()
-
-print(Patient_Objects.get_age_at_death2(88))  # calling the method to print the first patient with an age of death of 88 
-
 
 
 Patient_Objects.instantiate_from_csv("/Users/malcolmepstein/Desktop/BME 2315/Module 1/BME2315_Module1/Metadata and Protein Data for Module 1.csv") # making sure patients are instantiated from the data file
 
-age_at_death_male = [] # initializing age at death lists for each sex
-age_at_death_female = []
 
-for patient in Patient_Objects.filter(Patient_Objects.all_patients, sex = "Male"): # Adding every patient age at death to the lists
-    age_at_death_male.append(patient.age_at_death)
+# BAR GRAPH
 
-for patient in Patient_Objects.filter(Patient_Objects.all_patients, sex = "Female"):
-    age_at_death_female.append(patient.age_at_death)
+tTau_male_hs = [] # initializing tTau lists for males an females with a high school education
+tTau_female_hs = []
+
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, sex = "Male", highest_level_education = "High School"): # Adding every male with a hs education to the list
+    tTau_male_hs.append(patient.tTau_pg_ug)
+
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, sex = "Female", highest_level_education = "High School"):
+    tTau_female_hs.append(patient.tTau_pg_ug)
 
 
-x_male_bar = (statistics.mean(age_at_death_male))  # setting x and y bar heights as the mean of the age of deaths
-x_female_bar = (statistics.mean(age_at_death_female))
+x_male_hs_bar = (statistics.mean(tTau_male_hs))  # setting x and y bar heights as the mean of the age of deaths
+x_female_hs_bar = (statistics.mean(tTau_female_hs))
 
-age_at_death_male_stdev = (statistics.stdev(age_at_death_male))  # setting the standard deviations as the SD for male and female age of deaths
-age_at_death_female_stdev = (statistics.stdev(age_at_death_female))
+tTau_male_hs_stdev = (statistics.stdev(tTau_male_hs))  # setting the standard deviations as the SD for male and female age of deaths
+tTau_female_hs_stdev = (statistics.stdev(tTau_female_hs))
 
-print(f'x_male_bar = {x_male_bar}, ge_at_death_male_stdev {age_at_death_male_stdev}') # setting standard deviations of bars to the SD's defined one step ago
-print(f'x_female_bar = {x_female_bar}, ge_at_death_female_stdev {age_at_death_female_stdev}')
+print(f'Male (High School) Mean: = {x_male_hs_bar}, Male (High School) Standard Deviation: {tTau_male_hs_stdev}') # Printing means and SD values for both
+print(f'Female (High School) Mean: = {x_female_hs_bar}, Male (High School) Standard Deviation: {tTau_female_hs_stdev}')
 
-patient_sex_cols = ['Male', 'Female']  # setting column headers
-mean_sex = [x_male_bar, x_female_bar]
-stdev_sex = [age_at_death_male_stdev, age_at_death_female_stdev]
+patient_sex_cols = ['Male (High School)', 'Female (High School)']  # setting column headers
+mean_sex = [x_male_hs_bar, x_female_hs_bar]
+stdev_sex = [tTau_male_hs_stdev, tTau_female_hs_stdev]
 yerr = [np.zeros(len(mean_sex)), stdev_sex]
 
 
-t_stat, p_val = stats.ttest_ind(age_at_death_male, age_at_death_female)
-print(f't_stat = {t_stat}, p_val = {p_val}')
+t_stat, p_val = stats.ttest_ind(tTau_male_hs, tTau_female_hs)
+print(f't_statistic bar graph: = {t_stat}, p_value bar graph: = {p_val}')
 
 plt.bar(patient_sex_cols, mean_sex, yerr=yerr, capsize=10, color=["blue", "orange"]) # setting colors and chart titles
-plt.title("Age at Death by Sex")
+plt.title("tTau Levels By Sex (High School)")
 plt.xlabel("Sex")
-plt.ylabel("Age at Death")
+plt.ylabel("tTau")
+plt.text(0.05, 0.95, f"p = {p_val:.3f}", transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', horizontalalignment='left')
 plt.show()
 
 
 
-brain_ph = []  # initializing brain ph and tau lists 
+# SCATTER PLOT
+
+years_of_education = []  # initializing brain ph and tau lists 
 tTau_pg_ug = []
 
-for patient in Patient_Objects.all_patients:  # if a patient has a ph of above 5 and a tau of below 5000 (to remove crazy outliers), the tau and ph data get addded to their respective lists
-    if patient.brain_ph > 5 and patient.tTau_pg_ug < 5000:
-        brain_ph.append(patient.brain_ph)
-        tTau_pg_ug.append(patient.tTau_pg_ug)
+# Outlier analysis
 
-X = brain_ph # setting variables, x to ph and y to tau
+all_tTau = []
+
+for patient in Patient_Objects.all_patients: 
+    all_tTau.append(patient.tTau_pg_ug)
+
+q1, q3 = np.percentile(all_tTau, [25,75]) # Fetches the 25th and 75th percentile
+iqr = q3-q1
+
+lower_fence = q1 - 4.5 * iqr # This is the same as IQR x 3 for only extreme outliers
+upper_fence = q1 + 4.5 * iqr
+
+for patient in Patient_Objects.all_patients: 
+    if lower_fence < patient.tTau_pg_ug < upper_fence:
+        tTau_pg_ug.append(patient.tTau_pg_ug)
+        years_of_education.append(patient.years_of_education)
+
+X = years_of_education # setting variables, x to years of educatioon and y to tau
 y = tTau_pg_ug
 
-X = np.array(brain_ph).reshape(-1,1)
+X = np.array(years_of_education).reshape(-1,1)
 y = np.array(tTau_pg_ug)
 
 model = LinearRegression()
@@ -103,17 +87,22 @@ slope = model.coef_[0]
 intercept = model.intercept_
 r2 = model.score(X,y)
 
+result = stats.linregress(years_of_education, tTau_pg_ug)
+print(f'p-value scatter plot: = {result.pvalue:.3f}')
+
 equation = f"y = {slope:.2f}x + {intercept:.2f}\nR^2 = {r2:.5f}"
-plt.text(0.05, 0.95, equation, transform=plt.gca().transAxes, color = "red", fontsize = 12, verticalalignment = 'top')
+plt.text(0.05, 0.95, equation, transform=plt.gca().transAxes, color = "black", fontsize = 12, verticalalignment = 'top')
+
+plt.text(0.95, 0.95, f"p = {result.pvalue:.3f}", transform=plt.gca().transAxes, color="black", fontsize=12, verticalalignment='top', horizontalalignment='right')
 
 x_line = np.linspace(X.min(), X.max(), 100).reshape(-1, 1)
 y_line = model.predict(x_line)
 plt.plot(x_line, y_line, color='red', linewidth=2)
 
 plt.scatter(X, y, color='blue') # printing the scatter plot and setting colors / titles
-plt.xlabel('Brain pH')
+plt.xlabel('Years of Education')
 plt.ylabel('tTAU pg/ag')
-plt.title('Scatter Plot of Brain pH vs tTAU pg/ag')
+plt.title('Scatter Plot of Years of Education vs tTAU pg/ag')
 plt.show()
 
 
@@ -123,15 +112,54 @@ plt.show()
 
 # ANOVA
 
-age_at_death = []
-# brain ph is already fetched
-# tTau is already fetched
+high_school = []
+bachelors = []
+trade_school = []
+graduate = []
+professional = []
 
-for patient in Patient_Objects.filter(Patient_Objects.all_patients):
-    age_at_death.append(patient.age_at_death)
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "High School"): 
+    high_school.append(patient.tTau_pg_ug)
 
-t_stat2, p_value2 = stats.f_oneway(age_at_death, brain_ph, tTau_pg_ug)
-print("ANOVA:")
-print(f't_stat = {t_stat2}, p_val = {p_value2}')
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Bachelors"): 
+    bachelors.append(patient.tTau_pg_ug)
 
-# find out how to print this graph
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Trade School/ Tech School"): 
+    trade_school.append(patient.tTau_pg_ug)
+
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Graduate (PhD/Masters)"): 
+    if lower_fence < patient.tTau_pg_ug < upper_fence: # Extreme outlier removal with 3 * IQR
+        graduate.append(patient.tTau_pg_ug)
+
+for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Professional"): 
+    professional.append(patient.tTau_pg_ug)
+
+
+x_tTau_hs_bar = statistics.mean(high_school)
+x_tTau_bachelors_bar = statistics.mean(bachelors)
+x_tTau_trade_bar = statistics.mean(trade_school)
+x_tTau_graduate_bar = statistics.mean(graduate)
+x_tTau_professional_bar = statistics.mean(professional)
+
+x_tTau_hs_stdev = statistics.stdev(high_school)
+x_tTau_bachelors_stdev = statistics.stdev(bachelors)
+x_tTau_trade_stdev = statistics.stdev(trade_school)
+x_tTau_graduate_stdev = statistics.stdev(graduate)
+x_tTau_professional_stdev = statistics.stdev(professional)
+
+education_cols = ["High School", "Bachelors", "Trade School", "Graduate", "Professional"]
+mean_education_tTau = [x_tTau_hs_bar, x_tTau_bachelors_bar, x_tTau_trade_bar, x_tTau_graduate_bar, x_tTau_professional_bar]
+stdev_education_tTau = [x_tTau_hs_stdev, x_tTau_bachelors_stdev, x_tTau_trade_stdev, x_tTau_graduate_stdev, x_tTau_professional_stdev]
+
+f_stat, p_value = stats.f_oneway(high_school, bachelors, trade_school, graduate, professional)
+print("\nANOVA:")
+print(f'f_stat ANOVA = {f_stat}, p_value ANOVA = {p_value}')
+
+plt.text(0.5, 0.95, f"One-Way ANOVA: p = {p_value:.3f}", transform=plt.gca().transAxes, ha='right', va='top', fontsize=12)
+
+yerr_education = [np.zeros(len(mean_education_tTau)), stdev_education_tTau]
+plt.bar(education_cols, mean_education_tTau, yerr=yerr_education, capsize=10, color=["red", "blue", "pink", "skyblue", "orange"])
+plt.title("tTau Levels by Highest Education Level")
+plt.xlabel("Education Level")
+plt.ylabel("tTau")
+plt.show()
