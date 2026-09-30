@@ -106,8 +106,6 @@ plt.title('Scatter Plot of Years of Education vs tTAU pg/ag')
 plt.show()
 
 
-# For some reason you have to click run twice, and delete the first bar graph to let both graphs appear at once
-
 
 
 # ANOVA
@@ -119,20 +117,24 @@ graduate = []
 professional = []
 
 for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "High School"): 
-    high_school.append(patient.tTau_pg_ug)
+    if lower_fence < patient.tTau_pg_ug < upper_fence:
+        high_school.append(patient.tTau_pg_ug)
 
 for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Bachelors"): 
-    bachelors.append(patient.tTau_pg_ug)
+    if lower_fence < patient.tTau_pg_ug < upper_fence:
+        bachelors.append(patient.tTau_pg_ug)
 
 for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Trade School/ Tech School"): 
-    trade_school.append(patient.tTau_pg_ug)
+    if lower_fence < patient.tTau_pg_ug < upper_fence:   
+        trade_school.append(patient.tTau_pg_ug)
 
 for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Graduate (PhD/Masters)"): 
     if lower_fence < patient.tTau_pg_ug < upper_fence: # Extreme outlier removal with 3 * IQR
         graduate.append(patient.tTau_pg_ug)
 
 for patient in Patient_Objects.filter(Patient_Objects.all_patients, highest_level_education = "Professional"): 
-    professional.append(patient.tTau_pg_ug)
+    if lower_fence < patient.tTau_pg_ug < upper_fence:
+        professional.append(patient.tTau_pg_ug)
 
 
 x_tTau_hs_bar = statistics.mean(high_school)
@@ -152,7 +154,6 @@ mean_education_tTau = [x_tTau_hs_bar, x_tTau_bachelors_bar, x_tTau_trade_bar, x_
 stdev_education_tTau = [x_tTau_hs_stdev, x_tTau_bachelors_stdev, x_tTau_trade_stdev, x_tTau_graduate_stdev, x_tTau_professional_stdev]
 
 f_stat, p_value = stats.f_oneway(high_school, bachelors, trade_school, graduate, professional)
-print("\nANOVA:")
 print(f'f_stat ANOVA = {f_stat}, p_value ANOVA = {p_value}')
 
 plt.text(0.5, 0.95, f"One-Way ANOVA: p = {p_value:.3f}", transform=plt.gca().transAxes, ha='right', va='top', fontsize=12)

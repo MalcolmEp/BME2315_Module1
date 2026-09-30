@@ -27,9 +27,9 @@ class Patient_Objects:  # Create the class
         return self.sex
 
 
-
     @classmethod 
     def instantiate_from_csv(cls, filename: str): # Instantiating patients from the data csv file
+        cls.all_patients.clear() # Clears any existing list of patients
             
         with open(filename, encoding="utf8") as f: # Opening the data file and reading each line
             reader = csv.DictReader(f)
